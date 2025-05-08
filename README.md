@@ -1,101 +1,180 @@
-# mongo_with_ansible
+# **MongoDB Cluster Deployment with Ansible**
 
-**MongoDB Cluster Automation with Ansible**
+![Ansible](https://img.shields.io/badge/Ansible-2.10+-red.svg)
+![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green.svg)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-**Автоматизированное развертывание MongoDB на наименее загруженном сервере с настройкой сети и ограничением доступа.**
+Automated deployment of MongoDB across hybrid Linux environments with intelligent gateway routing and access control.
 
----
+## Table of Contents
 
-## **Оглавление**
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [Playbook Details](#-playbook-details)
+- [Security](#-security)
+- [Monitoring](#-monitoring)
+- [Troubleshooting](#-troubleshooting)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-1. [**Описание**](#описание)
-2. [**Требования**](#требования)
-3. [**Быстрый старт**](#быстрый-старт)
-4. [**Как это работает**](#как-это-работает)
-5. [**Проверка работы**](#проверка-работы)
+## 🌟 Features
 
----
+- **Automatic Load Analysis** - Dynamically identifies most/least loaded nodes
+- **Smart Gateway Routing** - Configures NAT and IP forwarding automatically
+- **Secure MongoDB Deployment** - Isolated access with firewall rules
+- **DNS Integration** - Service discovery via `/etc/hosts`
+- **Multi-OS Support**:
+  - ✅ Alt Linux (RHEL-based)
+  - ✅ Astra Linux (Debian-based)
+  - ✅ RedOS (RHEL-based)
 
-## **Описание**
+## 🏗 Architecture
 
-Этот проект автоматизирует:  
-**Развертывание MongoDB** на наименее загруженном сервере (Alt Linux / Astra Linux)  
-**Настройку сети**:
-
-- Самый загруженный сервер становится **маршрутизатором**
-- Доступ в интернет **через самый загруженный сервер**  
-  **Ограничение доступа**:
-- MongoDB доступен **только с RedOS**
-- Остальные серверы **не могут подключиться**
-  **Доступ по имени** (`mongodb.local`)
-
----
-
-## **Требования**
-
-- **3 сервера**:
-  - 1 × Alt Linux
-  - 2 × Astra Linux
-  - 1 × RedOS
-- **Ansible** (управляющая машина)
-- **SSH-доступ** с правами sudo
-
----
-
-## **Быстрый старт**
-
-### **1. Клонирование и настройка**
-
-```bash
-git clone https://github.com/yourusername/mongodb-ansible-automation.git
-cd mongodb-ansible-automation
+```mermaid
+graph TD
+    A[Internet] --> B[(Gateway Server)]
+    B --> C[MongoDB Server]
+    B --> D[Restricted Server]
+    B --> E[Restricted Server]
+    C -->|Reachable via| F["mongodb.internal"]
 ```
 
-### **2. Настройка инвентаря**
+## 📋 Prerequisites
 
-Отредактируйте `inventory/hosts.ini` заменив ip адреса серверов и (или) добавив нужные сервера:
+- Ansible 2.10+
+- Python 3.8+
+- SSH access to all servers
+- Sudo privileges on target machines
+
+## 🚀 Quick Start
+
+```bash
+# Clone repository
+git clone https://github.com/yourrepo/mongodb-ansible.git
+cd mongodb-ansible
+
+# Install dependencies
+pip install ansible
+
+# Deploy infrastructure
+ansible-playbook -i inventory.ini playbooks/run_all.yml
+```
+
+## ⚙ Configuration
+
+### Inventory File (`inventory.ini`)
 
 ```ini
-[all_servers]
-alt_linux ansible_host=your_host ansible_user=admin ansible_ssh_pass=password
-astra_linux1 ansible_host=your_host ansible_user=admin ansible_ssh_pass=password
-redos ansible_host=your_host ansible_user=admin ansible_ssh_pass=password
+[linux_servers]
+server1 ansible_host=192.168.1.10 ansible_user=admin os_type=alt
+server2 ansible_host=192.168.1.11 ansible_user=admin os_type=astra
+server3 ansible_host=192.168.1.12 ansible_user=admin os_type=redos
+
+[mongodb_servers]
+server3
+
+[gateway_servers]
+# Auto-populated during execution
 ```
 
-### **3. Запуск автоматизации**
+### Variables (`vars/main.yml`)
+
+```yaml
+mongodb:
+  version: "7.0"
+  port: 27017
+  bind_ip: "0.0.0.0"
+  dns_name: "mongodb.internal"
+
+network:
+  external_iface: "eth0"
+  internal_iface: "eth1"
+```
+
+## 📜 Playbook Details
+
+| Playbook                   | Description            | Tags       |
+| -------------------------- | ---------------------- | ---------- |
+| `1_find_most_loaded.yml`   | Analyzes CPU/RAM usage | `analysis` |
+| `2_setup_gateway.yml`      | Configures NAT/routing | `gateway`  |
+| `3_deploy_mongodb.yml`     | Installs MongoDB       | `mongodb`  |
+| `4_configure_firewall.yml` | Sets up access control | `firewall` |
+| `5_update_dns.yml`         | Updates hosts file     | `dns`      |
+
+Run specific components:
 
 ```bash
-# Выбор серверов по нагрузке
-ansible-playbook -i inventory/hosts.ini playbooks/01-select-servers.yml
-
-# Установка MongoDB
-ansible-playbook -i inventory/hosts.ini playbooks/02-deploy-mongodb.yml
-
-# Настройка сети
-ansible-playbook -i inventory/hosts.ini playbooks/03-configure-network.yml
-
-# Проверка доступа
-ansible-playbook -i inventory/hosts.ini playbooks/04-verify-access.yml
+ansible-playbook -i inventory.ini playbooks/3_deploy_mongodb.yml --tags "mongodb"
 ```
 
----
+## 🔒 Security
 
-## **Проверка работы**
+### Best Practices Implemented
 
-### **1. Подключение к MongoDB с RedOS**
+- Firewall restrictions to MongoDB port
+- Service binding to internal network
+- Encrypted SSH connections
+
+### Recommended Enhancements
 
 ```bash
-ssh admin@redos
-mongo mongodb.local --username admin --password securepassword123 --authenticationDatabase admin
+# Enable MongoDB authentication
+mongo --eval 'db.createUser({
+  user: "admin",
+  pwd: "strongpassword",
+  roles: ["root"]
+})'
 ```
 
-**Должно подключиться успешно.**
+## 📊 Monitoring
 
-### **2. Попытка подключения с других серверов**
+Basic health check playbook included:
 
 ```bash
-ssh admin@alt_linux
-mongo mongodb.local --username admin --password securepassword123 --authenticationDatabase admin
+ansible-playbook -i inventory.ini playbooks/check_health.yml
 ```
 
-**Должно быть отказано в доступе.**
+Sample output:
+
+```
+ok: [server1] => {
+    "msg": "MongoDB available: 5ms latency"
+}
+```
+
+## 🐛 Troubleshooting
+
+| Error                    | Solution                             |
+| ------------------------ | ------------------------------------ |
+| "Could not resolve host" | Verify `/etc/hosts` entries          |
+| Connection refused       | Check firewall rules on MongoDB host |
+| Package install fails    | Verify OS compatibility in inventory |
+
+View detailed logs:
+
+```bash
+ANSIBLE_DEBUG=1 ansible-playbook -i inventory.ini playbooks/run_all.yml
+```
+
+## 🗺 Roadmap
+
+- [ ] Add TLS encryption
+- [ ] Implement replica sets
+- [ ] Integrate with Prometheus monitoring
+- [ ] Add Terraform provisioning
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Commit your changes (`git commit -am 'Add some fooBar'`)
+4. Push to the branch (`git push origin feature/fooBar`)
+5. Create a new Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
