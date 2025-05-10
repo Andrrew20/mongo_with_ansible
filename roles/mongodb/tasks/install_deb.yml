@@ -1,0 +1,21 @@
+- name: Install prerequisites (Debian)
+  apt:
+    name: ["wget", "gnupg", "software-properties-common"]
+    state: present
+    update_cache: yes
+
+- name: Add MongoDB GPG key (Debian)
+  apt_key:
+    url: https://www.mongodb.org/static/pgp/server-{{ mongodb.version }}.asc
+    state: present
+
+- name: Add MongoDB repository (Debian)
+  apt_repository:
+    repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/{{ mongodb.version }} multiverse"
+    state: present
+
+- name: Install MongoDB packages (Debian)
+  apt:
+    name: "{{ mongodb_packages }}"
+    state: present
+    update_cache: yes

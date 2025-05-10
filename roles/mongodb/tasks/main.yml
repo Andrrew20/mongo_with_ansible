@@ -1,0 +1,19 @@
+---
+- include_tasks: install_redhat.yml
+  when: ansible_distribution in ["RedOS", "AltLinux"]
+
+- include_tasks: install_debian.yml
+  when: ansible_distribution == "AstraLinux"
+
+- name: Configure MongoDB to listen on LAN
+  lineinfile:
+    path: /etc/mongod.conf
+    regexp: "^  bindIp:"
+    line: "  bindIp: 0.0.0.0"
+  notify: Restart MongoDB
+
+- name: Enable and start MongoDB
+  service:
+    name: mongod
+    state: started
+    enabled: yes

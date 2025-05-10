@@ -1,0 +1,14 @@
+mongodb:
+  version: "7.0"
+  port: 27017
+  bind_ip: "0.0.0.0"
+  dns_name: "mongodb.internal"
+  config_path: "/etc/mongod.conf"
+
+network:
+  external_iface: "eth0"
+  internal_iface: "eth1"
+
+security:
+  allowed_access_ip: "192.168.1.13" # IP redos сервера
+  enable_firewall: true
