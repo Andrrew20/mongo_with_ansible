@@ -1,27 +1,32 @@
 ---
-- name: Get current load average (1min)
+- name: Get current load average
   shell: cat /proc/loadavg | awk '{print $1}'
   register: load_result
   changed_when: false
 
-- name: Set current load fact
+- name: Set current load fact for host
   set_fact:
     current_load: "{{ load_result.stdout | float }}"
 
-- name: Determine least/most loaded servers
+- name: Collect all loads and determine targets
   run_once: yes
   delegate_to: localhost
   block:
-    - name: Collect all loads
+    - name: Create server loads dictionary
       set_fact:
-        server_loads: "{{ ansible_play_hosts | map('extract', hostvars, 'current_load') | list }}"
+        server_loads: "{{ dict(ansible_play_hosts | zip(ansible_play_hosts | map('extract', hostvars, 'current_load'))) }}"
 
-    - name: Find target servers
+    - name: Find least loaded server
       set_fact:
-        least_loaded_server: "{{ ansible_play_hosts | zip(server_loads) | min(attribute='1') | first }}"
-        most_loaded_server: "{{ ansible_play_hosts | zip(server_loads) | max(attribute='1') | first }}"
+        least_loaded_host: "{{ server_loads | dictsort(by='value') | first | first }}"
+        global_least_loaded: "{{ least_loaded_host }}"
+
+    - name: Find most loaded server
+      set_fact:
+        most_loaded_host: "{{ server_loads | dictsort(by='value') | last | first }}"
+        global_most_loaded: "{{ most_loaded_host }}"
 
     - debug:
-        msg: >
-          Least loaded: {{ least_loaded_server }} (load: {{ hostvars[least_loaded_server].current_load }})
-          Most loaded: {{ most_loaded_server }} (load: {{ hostvars[most_loaded_server].current_load }})
+        msg: |
+          Least loaded: {{ least_loaded_host }} (load: {{ server_loads[least_loaded_host] }})
+          Most loaded: {{ most_loaded_host }} (load: {{ server_loads[most_loaded_host] }})

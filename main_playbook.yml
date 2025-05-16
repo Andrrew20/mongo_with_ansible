@@ -1,26 +1,36 @@
 ---
-- name: Detect OS and setup facts
-  hosts: all_servers
-  gather_facts: yes
-  roles:
-    - detect_os
+- name: Gather facts and detect OS
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Set OS family fact
+      include_role:
+        name: detect_os
 
 - name: Discover server loads
-  hosts: all_servers
-  roles:
-    - discover_load
+  hosts: all
+  tasks:
+    - name: Get server loads
+      include_role:
+        name: discover_load
 
 - name: Install MongoDB on least loaded server
-  hosts: "{{ hostvars['localhost'].least_loaded_server }}"
-  roles:
-    - install_mongodb
+  hosts: "{{ least_loaded_host }}"
+  tasks:
+    - name: Install MongoDB
+      include_role:
+        name: install_mongodb
 
 - name: Configure router on most loaded server
-  hosts: "{{ hostvars['localhost'].most_loaded_server }}"
-  roles:
-    - setup_router
+  hosts: "{{ most_loaded_host }}"
+  tasks:
+    - name: Setup router
+      include_role:
+        name: setup_router
 
 - name: Configure access control
-  hosts: all_servers
-  roles:
-    - configure_access
+  hosts: all
+  tasks:
+    - name: Configure access
+      include_role:
+        name: configure_access
