@@ -1,3 +1,0 @@
-dns_entries:
-  - name: "mongodb.internal"
-    ip: "{{ hostvars['redos']['ansible_default_ipv4']['address'] }}"

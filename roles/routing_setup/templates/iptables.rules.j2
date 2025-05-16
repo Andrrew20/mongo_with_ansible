@@ -1,0 +1,27 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# Basic rules
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -p tcp --dport 22 -j ACCEPT
+
+# MongoDB access from allowed host only
+-A INPUT -p tcp --dport {{ app_port }} -s {{ hostvars[allowed_access_server]['ansible_host'] }} -j ACCEPT
+
+# Forwarding to MongoDB server
+-A FORWARD -p tcp --dport {{ app_port }} -d {{ hostvars[mongodb_server]['ansible_host'] }} -j ACCEPT
+COMMIT
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# NAT for MongoDB
+-A PREROUTING -p tcp --dport {{ app_port }} -j DNAT --to-destination {{ hostvars[mongodb_server]['ansible_host'] }}:{{ app_port }}
+-A POSTROUTING -p tcp -d {{ hostvars[mongodb_server]['ansible_host'] }} --dport {{ app_port }} -j SNAT --to-source {{ ansible_host }}
+COMMIT

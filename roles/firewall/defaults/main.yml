@@ -1,2 +1,0 @@
-mongodb_port: 27017
-allowed_ips: ["192.168.1.13"] # По умолчанию только redos

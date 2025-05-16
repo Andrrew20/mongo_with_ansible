@@ -1,6 +1,0 @@
----
-- name: Add MongoDB entry to /etc/hosts
-  lineinfile:
-    path: /etc/hosts
-    line: "{{ hostvars['redos']['ansible_default_ipv4']['address'] }} {{ dns_name }}"
-    state: present

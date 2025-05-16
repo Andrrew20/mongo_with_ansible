@@ -1,0 +1,26 @@
+---
+- name: Detect OS and setup facts
+  hosts: all_servers
+  gather_facts: yes
+  roles:
+    - detect_os
+
+- name: Discover server loads
+  hosts: all_servers
+  roles:
+    - discover_load
+
+- name: Install MongoDB on least loaded server
+  hosts: "{{ hostvars['localhost'].least_loaded_server }}"
+  roles:
+    - install_mongodb
+
+- name: Configure router on most loaded server
+  hosts: "{{ hostvars['localhost'].most_loaded_server }}"
+  roles:
+    - setup_router
+
+- name: Configure access control
+  hosts: all_servers
+  roles:
+    - configure_access

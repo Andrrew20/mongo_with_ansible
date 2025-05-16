@@ -1,2 +1,0 @@
-metrics_dir: "/tmp/server_metrics"
-load_threshold: 1.5 # Пороговое значение для определения нагрузки

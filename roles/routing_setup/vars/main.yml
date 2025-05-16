@@ -1,0 +1,15 @@
+firewall_packages:
+  alt:
+    - iptables
+    - iptables-persistent
+  astra:
+    - iptables
+    - iptables-persistent
+  red:
+    - iptables
+    - iptables-services
+
+service_names:
+  alt: netfilter-persistent
+  astra: netfilter-persistent
+  red: iptables

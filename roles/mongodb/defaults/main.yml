@@ -1,5 +1,0 @@
-mongodb_packages:
-  - mongodb-org
-  - mongodb-org-server
-  - mongodb-org-mongos
-  - mongodb-org-tools

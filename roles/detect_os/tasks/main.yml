@@ -1,0 +1,23 @@
+---
+- name: Set OS specific variables
+  set_fact:
+    os_family: >-
+      {% if ansible_distribution == 'ALT Linux' %}alt
+      {% elif ansible_distribution == 'Astra Linux' %}astra
+      {% elif ansible_distribution == 'Red' %}red
+      {% endif %}
+
+    pkg_manager: >-
+      {% if ansible_distribution in ['ALT Linux', 'AstraLinux'] %}apt
+      {% elif ansible_distribution == 'Red' %}dnf
+      {% endif %}
+
+    iptables_config: >-
+      {% if ansible_distribution in ['ALT Linux', 'AstraLinux'] %}/etc/iptables/rules.v4
+      {% elif ansible_distribution == 'Red' %}/etc/sysconfig/iptables
+      {% endif %}
+
+    persistent_service: >-
+      {% if ansible_distribution in ['ALT Linux', 'AstraLinux'] %}netfilter-persistent
+      {% elif ansible_distribution == 'Red' %}iptables
+      {% endif %}

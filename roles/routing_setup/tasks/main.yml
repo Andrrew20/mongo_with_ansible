@@ -1,0 +1,45 @@
+---
+- name: Import OS detection
+  import_tasks: ../../detect_os/tasks/main.yml
+
+- name: Install firewall packages
+  package:
+    name: "{{ firewall_packages[os_family] }}"
+    state: present
+  vars:
+    ansible_package_manager: "{{ pkg_manager }}"
+
+- name: Configure kernel parameters
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { name: net.ipv4.ip_forward, value: 1 }
+    - { name: net.ipv4.conf.all.rp_filter, value: 0 }
+    - { name: net.ipv4.conf.default.rp_filter, value: 0 }
+
+- name: Configure iptables rules
+  template:
+    src: iptables.rules.j2
+    dest: "{{ iptables_config }}"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Apply firewall rules
+  service:
+    name: "{{ service_names[os_family] }}"
+    state: restarted
+
+- name: Enable firewall persistence
+  service:
+    name: "{{ service_names[os_family] }}"
+    enabled: yes
+
+- name: Verify iptables rules
+  command: iptables -L -n -v
+  register: iptables_check
+  changed_when: false
+  failed_when: false
