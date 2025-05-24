@@ -1,0 +1,5 @@
+- name: Add Mongo to hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "astra<--->mongodb.local"
+    state: present

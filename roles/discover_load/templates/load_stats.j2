@@ -1,7 +1,0 @@
-Server Load Statistics:
-{% for host in ansible_play_hosts %}
-{{ host }}: {{ hostvars[host].current_load | default('N/A') }}
-{% endfor %}
-
-Least loaded server: {{ least_loaded_server }}
-Most loaded server: {{ most_loaded_server }}

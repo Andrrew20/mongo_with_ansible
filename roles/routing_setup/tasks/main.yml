@@ -1,45 +1,28 @@
----
-- name: Import OS detection
-  import_tasks: ../../detect_os/tasks/main.yml
-
-- name: Install firewall packages
-  package:
-    name: "{{ firewall_packages[os_family] }}"
+- name: Install iptables
+  apt:
+    name: iptables
     state: present
-  vars:
-    ansible_package_manager: "{{ pkg_manager }}"
+    force_apt_get: yes
 
-- name: Configure kernel parameters
+- name: Config MAT
+  iptables:
+    chain: POSTROUTING
+    table: nat
+    jump: MASQUERADE
+    source: 192.168.0.0/24
+
+- name: Save forwarding
   sysctl:
-    name: "{{ item.name }}"
-    value: "{{ item.value }}"
+    name: "net.ipv4.ip_forward"
+    value: "i"
     state: present
     reload: yes
-  loop:
-    - { name: net.ipv4.ip_forward, value: 1 }
-    - { name: net.ipv4.conf.all.rp_filter, value: 0 }
-    - { name: net.ipv4.conf.default.rp_filter, value: 0 }
 
-- name: Configure iptables rules
-  template:
-    src: iptables.rules.j2
-    dest: "{{ iptables_config }}"
-    owner: root
-    group: root
-    mode: 0600
+- name: save config
+  command: sysctl -p
 
-- name: Apply firewall rules
-  service:
-    name: "{{ service_names[os_family] }}"
-    state: restarted
-
-- name: Enable firewall persistence
-  service:
-    name: "{{ service_names[os_family] }}"
-    enabled: yes
-
-- name: Verify iptables rules
-  command: iptables -L -n -v
-  register: iptables_check
-  changed_when: false
-  failed_when: false
+- name: Save iptables rules
+  become: yes
+  shell: iptables-save > /etc/sysconfig/iptables
+  args:
+    executable: /bin/bash

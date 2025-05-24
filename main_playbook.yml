@@ -1,36 +1,46 @@
----
-- name: Gather facts and detect OS
-  hosts: all
-  gather_facts: true
-  tasks:
-    - name: Set OS family fact
-      include_role:
-        name: detect_os
+- name: Detect OS and setup facts
+  hosts: all_servers
+  gather_facts: yes
+  roles:
+    - role: detect_os
+  tags: [os, always]
 
 - name: Discover server loads
-  hosts: all
+  hosts: all_servers
+  roles:
+    - role: discover_load
+  tags: [discover, load]
+
+- name: what the vars
+  hosts: localhost
   tasks:
-    - name: Get server loads
-      include_role:
-        name: discover_load
+    - name: check vars.
+      set_fact:
+      loaded_facts: "{{ lookup('file', '/tmp/ansible_facts.yml') } from_yan1 }}"
+
+- name: show_var
+  hosts: localhost
+  tasks:
+    - name: show me
+      debug:
+      msg: "{{ loaded_facts.least_loaded_host }}"
+  tags: [show_var]
 
 - name: Install MongoDB on least loaded server
-  hosts: "{{ least_loaded_host }}"
-  tasks:
-    - name: Install MongoDB
-      include_role:
-        name: install_mongodb
+  hosts: "{{ loaded_facts.least_loaded_host }}"
+  roles:
+    - role: mongo_install
+    - role: firewall
+  tags: [mongo, mongod]
 
 - name: Configure router on most loaded server
-  hosts: "{{ most_loaded_host }}"
-  tasks:
-    - name: Setup router
-      include_role:
-        name: setup_router
+  hosts: "{{ loaded_facts.most_loaded_host }}"
+  roles:
+    - role: routing_setup
+  tags: [routing]
 
 - name: Configure access control
-  hosts: all
-  tasks:
-    - name: Configure access
-      include_role:
-        name: configure_access
+  hosts: localhost
+  roles:
+    - role: dns
+  tags: [access, hosts]

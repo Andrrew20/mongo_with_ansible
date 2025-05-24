@@ -1,43 +1,37 @@
----
-- name: Import OS detection
-  import_tasks: ../../detect_os/tasks/main.yml
+- name: Add MongoDB GPG key
+  apt_key:
+    url: "https://www.mongodb.org/static/app/server-{{ mongodb_version }}.esc"
+    state: present
 
-- name: Install MongoDB (ALT/Astra)
-  block:
-    - name: Add MongoDB GPG key
-      apt_key:
-        url: "https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc"
-        state: present
+- name: Add MongoDB repo
+  apt_repository:
+    repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/{{ mongodb_version }} multiverse}
+    state: present
+    update_cache: yes
 
-    - name: Add MongoDB repo
-      apt_repository:
-        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/{{ mongodb_version }} multiverse"
-        state: present
-        update_cache: yes
+- name: Install packages
+  apt:
+    name: "{{ mongodb_packages }}"
+    state: present
+    update_cache: yes
 
-    - name: Install packages
-      apt:
-        name: "{{ mongodb_packages }}"
-        state: present
-        update_cache: yes
-  when: ansible_distribution in ['ALT', 'AstraLinux']
+- name: Install Dependencies
+  apt:
+    name:
+      - gnupg
+      - wget
+    state: present
+    update_cache: yes
 
-- name: Install MongoDB (RedOS)
-  block:
-    - name: Add MongoDB repo
-      yum_repository:
-        name: mongodb-org-{{ mongodb_version }}
-        description: MongoDB Repository
-        baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/{{ mongodb_version }}/x86_64/
-        gpgcheck: 1
-        enabled: 1
-        gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_version }}.asc
+- name: Daemon reload
+  systemd:
+    daemon-reload: yes
 
-    - name: Install packages
-      dnf:
-        name: "{{ mongodb_packages }}"
-        state: present
-  when: ansible_distribution == 'Red'
+- name: Enable and start MongoDB service
+  service:
+    name: mongod
+    state: restarted
+    enabled: yes
 
 - name: Configure MongoDB
   template:

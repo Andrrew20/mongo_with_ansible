@@ -1,0 +1,18 @@
+- name: Allow client for mongo
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 27017
+    source: 192.168.0.10
+    jump: ACCEPT
+
+- name: Deny others
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 27017
+    source: 192.168.0.20
+    jump: DROP
+
+- name: Save rules
+  shell: iptables-save > /etc/iptables.rules

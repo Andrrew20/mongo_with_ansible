@@ -8,8 +8,3 @@ firewall_packages:
   red:
     - iptables
     - iptables-services
-
-service_names:
-  alt: netfilter-persistent
-  astra: netfilter-persistent
-  red: iptables
