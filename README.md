@@ -1,6 +1,6 @@
 # **MongoDB Deployment with Ansible**
 
-![Ansible](https://img.shields.io/badge/ansible-2.10+-red.svg) ![MongoDB](https://img.shields.io/badge/mongodb-7.0-green.svg) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Ansible](https://img.shields.io/badge/ansible-2.10+-red.svg) ![MongoDB](https://img.shields.io/badge/mongodb-4.4-green.svg) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Automated deployment of MongoDB across hybrid Linux environments with intelligent gateway routing and access control.
 
