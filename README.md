@@ -31,7 +31,7 @@ mongodb:
   port: {your port(default: 27017)}
   dns_name: "mongodb.local" #mongodb-servername
 
-## **Workflow**
+### **Workflow**
 
 1. **Load Analysis** - Identifies most loaded server for gateway
 2. **Gateway Setup** - Configures NAT and IP forwarding
@@ -39,7 +39,7 @@ mongodb:
 4. **Firewall Rules** - Restricts access to MongoDB
 5. **DNS Update** - Adds `mongodb.local` to hosts
 
-## **Troubleshooting**
+### **Troubleshooting**
 
 ```bash
 # Check MongoDB status
