@@ -58,7 +58,6 @@ ansible-playbook -i inventory/hosts.ini main_playbook.yml
 
 ### **Variables (`group_vars/all.yml`)**
 
-````yaml
 mongodb:
   version: "{your_version}"
   port: {your port(default: 27017)}
