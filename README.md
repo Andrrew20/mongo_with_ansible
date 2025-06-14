@@ -6,39 +6,39 @@ Automated deployment of MongoDB across hybrid Linux environments with intelligen
 
 ## The purpose of playbooks
 
-group_vars
+**group_vars**
 Contains variables specific to groups of hosts from the inventory. For example, settings for different environments (prod, dev) or server roles (web, db).
 
-inventory
+**inventory**
 A file or directory that defines the hosts and their grouping. Specifies which servers playbooks are running on.
 
-roles
+**roles**
 A directory with roles, each of which encapsulates logic for performing a specific task (for example, installing mongodb).
 
-Roles in roles/:
+### Roles in roles/:
 
-detect_os/tasks
+**detect_os/tasks**
 Define tasks for detecting the operating system on target hosts. It can be used to conditionally perform other tasks depending on the OS.
 
-discover_load/tasks
+**discover_load/tasks**
 Tasks for collecting information about the server load (CPU, memory).
 
-dns/tasks
+**dns/tasks**
 Configuring the DNS name of mongodb server for client.
 
-firewall/tasks
+**firewall/tasks**
 Firewall management (iptables): opening ports, configuring rules.
 
-mongo_install
+**mongo_install**
 Installing and configuring MongoDB (adding repositories, configuring the server).
 
-routing_setup
+**routing_setup**
 Network routing settings (static routes, routing tables).
 
-README.md
+**README.md**
 Project documentation: description of the structure, launch instructions, dependencies.
 
-main_playbook.yml
+**main_playbook.yml**
 The main playbook that includes roles or tasks to complete.
 
 ## **Quick Start**
