@@ -57,12 +57,12 @@ ansible-playbook -i inventory/hosts.ini main_playbook.yml
 ```
 
 ### **Variables (`group_vars/all.yml`)**
-
+```bash
 mongodb:
   version: "{your_version}"
   port: {your port(default: 27017)}
   dns_name: "mongodb.local" #mongodb-servername
-
+```
 
 
 ### **Workflow**
